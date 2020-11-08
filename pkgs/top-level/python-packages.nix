@@ -137,6 +137,14 @@ in {
 
   recursivePthLoader = callPackage ../development/python-modules/recursive-pth-loader { };
 
+  # meta
+  _meta = {
+    # Please increase on backwards incompatible api changes.
+    apiVersion = 1;
+  };
+
+  # packages
+
   setuptools = if isPy27 then
     callPackage ../development/python-modules/setuptools/44.0.nix { }
   else
