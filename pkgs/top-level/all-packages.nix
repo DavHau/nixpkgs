@@ -27446,6 +27446,8 @@ julia_15 = callPackage ../development/compilers/julia/1.5.nix {
     nixUnstable
     nixFlakes;
 
+  nixStatic = pkgsStatic.nix;
+
   nixops = callPackage ../tools/package-management/nixops { };
 
   nixops_1_6_1 = callPackage ../tools/package-management/nixops/nixops-v1_6_1.nix {};
