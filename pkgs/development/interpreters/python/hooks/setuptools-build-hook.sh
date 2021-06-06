@@ -14,7 +14,16 @@ setuptoolsBuildPhase() {
     if [ -n "$setupPyBuildFlags" ]; then
         args+="build_ext $setupPyBuildFlags"
     fi
-    eval "@pythonInterpreter@ nix_run_setup $args bdist_wheel"
+    # exit 1
+    echo "ls $out/@pythonSitePackages@/_site_local"
+    [ -e $out/@pythonSitePackages@/_site_local ] && ls -lah $out/@pythonSitePackages@/_site_local
+
+    PYTHONPATH_TMP="$PYTHONPATH"
+    for privDep in $privateRuntimeDeps; do
+        PYTHONPATH_TMP="$privDep/@pythonSitePackages@:$PYTHONPATH_TMP"
+    done
+
+    PYTHONPATH="$PYTHONPATH_TMP" eval "@pythonInterpreter@ nix_run_setup $args bdist_wheel"
 
     runHook postBuild
     echo "Finished executing setuptoolsBuildPhase"

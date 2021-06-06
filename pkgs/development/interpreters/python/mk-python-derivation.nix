@@ -43,6 +43,8 @@
 # C can import package A propagated by B
 , propagatedBuildInputs ? []
 
+, privateRuntimeDeps ? []
+
 # DEPRECATED: use propagatedBuildInputs
 , pythonPath ? []
 
@@ -148,7 +150,21 @@ let
 
     buildInputs = buildInputs ++ pythonPath;
 
-    propagatedBuildInputs = propagatedBuildInputs ++ [ python ];
+    # propagatedBuildInputs = propagatedBuildInputs ++ [ python ];
+
+    propagatedBuildInputs = [];
+
+    privateRuntimeDeps = let
+      depsAttrs = lib.listToAttrs (map
+        (p: lib.nameValuePair (p.pname or p.name) p) 
+        (propagatedBuildInputs ++ lib.flatten (lib.forEach propagatedBuildInputs (
+          pbi: pbi.privateRuntimeDeps
+        ))));
+      in
+      lib.attrValues depsAttrs;
+      
+
+    # inherit privateRuntimeDeps;
 
     inherit strictDeps;
 

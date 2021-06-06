@@ -57,11 +57,19 @@ buildPythonPackage rec {
 
   # Ignored file https://github.com/pytest-dev/pytest/pull/5605#issuecomment-522243929
   # test_missing_required_plugins will emit deprecation warning which is treated as error
+  # the following tests fail parsing the stack trace which is changed through nixpkgs' sitecustomize.py:
+  #   - test_better_reporting_on_conftest_load_failure
+  #   - test_modules_not_importable_as_side_effect
+  #   - test_pdb_prevent_ConftestImportFailure_hiding_exception
   checkPhase = ''
     runHook preCheck
     $out/bin/py.test -x testing/ \
       --ignore=testing/test_junitxml.py \
-      -k "not test_collect_pyargs_with_testpaths and not test_missing_required_plugins"
+      -k "not test_collect_pyargs_with_testpaths \
+          and not test_missing_required_plugins \
+          and not test_better_reporting_on_conftest_load_failure \
+          and not test_modules_not_importable_as_side_effect \
+          and not test_pdb_prevent_ConftestImportFailure_hiding_exception"
 
     # tests leave behind unreproducible pytest binaries in the output directory, remove:
     find $out/lib -name "*-pytest-${version}.pyc" -delete
