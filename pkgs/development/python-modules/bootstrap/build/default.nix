@@ -7,11 +7,14 @@
 , packaging
 , pyproject-hooks
 , tomli
+, makeWrapper
 }:
 let
   buildBootstrapPythonModule = basePackage: attrs: stdenv.mkDerivation ({
     pname = "${python.libPrefix}-bootstrap-${basePackage.pname}";
     inherit (basePackage) version src meta;
+
+    nativeBuildInputs = [ makeWrapper ];
 
     buildPhase = ''
       runHook preBuild
@@ -40,10 +43,24 @@ let
   bootstrap-tomli = buildBootstrapPythonModule tomli {};
 in
 buildBootstrapPythonModule build {
-  propagatedBuildInputs = [
-    bootstrap-packaging
-    bootstrap-pyproject-hooks
-  ] ++ lib.optionals (python.pythonOlder "3.11") [
-    bootstrap-tomli
-  ];
+  # like the installPhase above, but wrapping the pyproject-build command
+  # to set up PYTHONPATH with the correct dependencies.
+  # This allows using `pyproject-build` without propagating its dependencies
+  # into the build environment, which is necessary to prevent
+  # pythonCatchConflicts from raising false positive alerts.
+  # This would happen whenever the package to build has a dependency on
+  # another version of a package that is also a dependency of pyproject-build.
+  installPhase = ''
+    runHook preInstall
+
+    PYTHONPATH="${installer}/${python.sitePackages}" \
+      ${python.interpreter} -m installer \
+        --destdir "$out" --prefix "" dist/*.whl
+
+    mv $out/bin/pyproject-build $out/bin/pyproject-build-wrapped
+    makeWrapper $out/bin/pyproject-build-wrapped $out/bin/pyproject-build \
+      --prefix PYTHONPATH : "$out/${python.sitePackages}:${bootstrap-pyproject-hooks}/${python.sitePackages}:${bootstrap-packaging}/${python.sitePackages}:${bootstrap-tomli}/${python.sitePackages}"
+
+    runHook postInstall
+  '';
 }

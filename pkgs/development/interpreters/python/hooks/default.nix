@@ -66,7 +66,47 @@ in {
   pypaBuildHook = callPackage ({ makePythonHook, build, wheel }:
     makePythonHook {
       name = "pypa-build-hook.sh";
-      propagatedBuildInputs = [ build wheel ];
+      propagatedBuildInputs = [ wheel ];
+      substitutions = {
+        inherit build;
+      };
+      # A test to ensure that this hook never propagates any of its dependencies
+      # into the build environment.
+      # This prevents falso positive alerts raised by catchConflictsHook.
+      # Such conflicts don't happen within the standard nixpkgs python package
+      # set, but in downstream projects that build packages depending on other
+      # versions of this hook's dependencies.
+      passthru.tests.dont-propagate-conflicting-deps = let
+        # customize a package so that its store paths differs
+        mkConflict = pkg: pkg.overrideAttrs { some_modification = true; };
+        # minimal pyproject.toml for the example project
+        pyprojectToml = builtins.toFile "pyproject.toml" ''
+          [project]
+          name = "my-project"
+          version = "1.0.0"
+        '';
+        # the source of the example project
+        projectSource = pkgs.runCommand "my-project-source" {} ''
+          mkdir -p $out/src
+          cp ${pyprojectToml} $out/pyproject.toml
+          touch $out/src/__init__.py
+        '';
+      in
+        # this build must never triger conflicts
+        pythonForBuild.pkgs.buildPythonPackage {
+          pname = "dont-propagate-conflicting-deps";
+          version = "0.0.0";
+          src = projectSource;
+          format = "pyproject";
+          propagatedBuildInputs =
+            [
+              # At least one dependency of `build` should be included here to
+              # keep the test meaningful
+              (mkConflict pythonForBuild.pkgs.tomli)
+            ]
+            # setuptools is also needed to build the example project
+            ++ [ pythonForBuild.pkgs.setuptools ];
+        };
     } ./pypa-build-hook.sh) {
       inherit (pythonForBuild.pkgs) build;
     };
