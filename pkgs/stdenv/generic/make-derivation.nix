@@ -163,6 +163,8 @@ let
 
 , env ? { }
 
+, modules ? []
+
 , ... } @ attrs:
 
 let
@@ -288,7 +290,7 @@ else let
 
   derivationArg =
     (removeAttrs attrs
-      (["meta" "passthru" "pos"
+      (["meta" "passthru" "pos" "modules"
        "checkInputs" "installCheckInputs"
        "nativeCheckInputs" "nativeInstallCheckInputs"
        "__contentAddressed"
@@ -542,7 +544,12 @@ lib.extendDerivation
    # should be made available to Nix expressions using the
    # derivation (e.g., in assertions).
    passthru)
-  (derivation (derivationArg // lib.optionalAttrs envIsExportable checkedEnv));
+  (lib.evalModules {
+    modules = modules ++ [
+      ./modules/dream2nix/derivation
+      {config.derivation = (derivationArg // lib.optionalAttrs envIsExportable checkedEnv);}
+    ];
+  }).config.public;
 
 in
   fnOrAttrs:
