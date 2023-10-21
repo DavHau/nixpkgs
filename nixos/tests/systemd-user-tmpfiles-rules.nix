@@ -19,6 +19,7 @@ import ./make-test-python.nix ({ lib, ... }: {
         "d %h/only_alice"
       ];
     };
+    systemd.tmpfiles.files.my-service."%h/only_bob".d = {};
   };
 
   testScript = { ... }: ''
@@ -31,5 +32,7 @@ import ./make-test-python.nix ({ lib, ... }: {
     machine.wait_until_succeeds("systemctl --user --machine=bob@ is-active systemd-tmpfiles-setup.service")
     machine.succeed("[ -d ~bob/user_tmpfiles_created ]")
     machine.succeed("[ ! -e ~bob/only_alice ]")
+
+    machine.succeed("stat ~bob/only_bob")
   '';
 })

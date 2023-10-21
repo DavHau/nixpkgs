@@ -20,6 +20,52 @@ in
       '';
     };
 
+    # example usage:
+    #
+    # systemd.tempfiles.files."my-service" = {
+    #   "/var/empty"."d" = {
+    #     mode = "0755";
+    #     user = "root";
+    #     group = "root";
+    #     age = "10d";
+    #     argument = "";
+    #   };
+    # };
+    systemd.tmpfiles.files = mkOption {
+      type = types.attrsOf (types.attrsOf (types.submodule {
+        options.mode = mkOption {
+          type = types.str;
+          default = "-";
+          example = "0755";
+          description = "File mode";
+        };
+        options.user = mkOption {
+          type = types.str;
+          default = "-";
+          example = "root";
+          description = "File owner";
+        };
+        options.group = mkOption {
+          type = types.str;
+          default = "-";
+          example = "root";
+          description = "File group";
+        };
+        options.age = mkOption {
+          type = types.str;
+          default = "-";
+          example = "10d";
+          description = "File age";
+        };
+        options.argument = mkOption {
+          type = types.str;
+          default = "";
+          example = "";
+          description = "File argument";
+        };
+      }));
+    };
+
     systemd.tmpfiles.packages = mkOption {
       type = types.listOf types.package;
       default = [];
@@ -69,6 +115,7 @@ in
           rm -f $out/${removePrefix "tmpfiles.d/" name}
         '') config.system.build.etc.passthru.targets;
       }) + "/*";
+      "tmpfiles.d"."my-service.conf".source =
     };
 
     systemd.tmpfiles.packages = [
