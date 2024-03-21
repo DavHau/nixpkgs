@@ -200,7 +200,7 @@ let
 
     proxyVendor = true;
 
-    buildPhase =
+    makeFlags =
       let
         buildType =
           assert (lib.count lib.id [ with_openblas with_cublas with_clblas ]) <= 1;
@@ -208,17 +208,26 @@ let
           else if with_cublas then "cublas"
           else if with_clblas then "clblas"
           else "";
-
-        buildFlags = [
+      in
+        [
           "VERSION=v${version}"
           "BUILD_TYPE=${buildType}"
           "GO_TAGS=\"${builtins.concatStringsSep " " GO_TAGS}\""
         ]
         ++ lib.optional with_cublas "CUDA_LIBPATH=${cudaPackages.cuda_cudart}/lib";
-      in
+
+    buildPhase =
       ''
         mkdir sources
-        make ${builtins.concatStringsSep " " buildFlags} build
+        local flagsArray=(
+            ''${enableParallelBuilding:+-j''${NIX_BUILD_CORES}}
+            SHELL=$SHELL
+        )
+        _accumFlagsArray makeFlags makeFlagsArray buildFlags buildFlagsArray
+
+        echoCmd 'build flags' "''${flagsArray[@]}"
+        make build "''${flagsArray[@]}"
+        unset flagsArray
       '';
 
     installPhase = ''
