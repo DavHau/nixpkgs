@@ -8,6 +8,9 @@
   rustPlatform,
   versionCheckHook,
   nix-update-script,
+  python3,
+  stdenv,
+  buildPackages,
 }:
 
 python3Packages.buildPythonApplication rec {
@@ -32,6 +35,8 @@ python3Packages.buildPythonApplication rec {
     };
   };
 
+  maturinBuildFlags = [ "--interpreter ${python3.executable}" ];
+
   nativeBuildInputs = [
     cmake
     installShellFiles
@@ -47,17 +52,25 @@ python3Packages.buildPythonApplication rec {
     "uv"
   ];
 
-  postInstall = ''
-    export HOME=$TMPDIR
-    installShellCompletion --cmd uv \
-      --bash <($out/bin/uv --generate-shell-completion bash) \
-      --fish <($out/bin/uv --generate-shell-completion fish) \
-      --zsh <($out/bin/uv --generate-shell-completion zsh)
-  '';
+  postInstall =
+    let
+      uv =
+        if stdenv.hostPlatform == stdenv.buildPlatform then
+          "$out"
+        else
+          buildPackages.uv;
+    in
+    ''
+      export HOME=$TMPDIR
+      installShellCompletion --cmd uv \
+        --bash <(${uv}/bin/uv --generate-shell-completion bash) \
+        --fish <(${uv}/bin/uv --generate-shell-completion fish) \
+        --zsh <(${uv}/bin/uv --generate-shell-completion zsh)
+    '';
 
   pythonImportsCheck = [ "uv" ];
 
-  nativeCheckInputs = [
+  nativeInstallCheckInputs = [
     versionCheckHook
   ];
   versionCheckProgramArg = [ "--version" ];
