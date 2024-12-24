@@ -3,6 +3,7 @@
   buildPythonPackage,
   fetchFromGitHub,
   pythonOlder,
+  python3,
 
   # build
   meson,
@@ -72,6 +73,12 @@ let
     };
 
     pythonImportsCheck = [ "contourpy" ];
+
+    # remove references to buildPackages.python3, which is not allowed for cross builds.
+    fixupPhase = ''
+      rm $out/${python3.sitePackages}/contourpy/util/_build_config.py
+      rm $out/${python3.sitePackages}/contourpy/util/__pycache__/_build_config.*
+    '';
 
     meta = with lib; {
       changelog = "https://github.com/contourpy/contourpy/releases/tag/v${version}";
