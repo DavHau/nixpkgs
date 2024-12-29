@@ -32,6 +32,7 @@
   parameterized,
   pip-tools,
   pkg-config,
+  pkgconfig,
   prompt-toolkit,
   protobuf,
   psutil,
@@ -106,6 +107,7 @@ stdenv.mkDerivation rec {
     zap-chip
     # gdbus-codegen
     glib
+    pkgconfig
     python
     # dependencies of build scripts
     click
@@ -194,6 +196,7 @@ stdenv.mkDerivation rec {
         packaging
         parameterized
         pip-tools
+        pkgconfig
         prompt-toolkit
         protobuf
         psutil
