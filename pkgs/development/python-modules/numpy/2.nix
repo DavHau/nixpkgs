@@ -81,6 +81,10 @@ buildPythonPackage rec {
     # remove needless reference to full Python path stored in built wheel
     substituteInPlace numpy/meson.build \
       --replace-fail 'py.full_path()' "'python'"
+  ''
+  + ''
+    substituteInPlace numpy/_core/meson.build \
+      --replace-fail "if longdouble_format == 'UNKNOWN'" "if false"
   '';
 
   build-system =
