@@ -7,7 +7,9 @@
 # major and only downstream dependency
 , vlc
 }:
-
+let
+  isStatic = stdenv.hostPlatform.isStatic;
+in
 stdenv.mkDerivation rec {
   pname = "live555";
   version = "2023.05.10";
@@ -44,7 +46,7 @@ stdenv.mkDerivation rec {
 
     ./genMakefiles ${
       if stdenv.isLinux then
-        "linux"
+        if isStatic then "linux" else "linux-with-shared-libraries"
       else if stdenv.isDarwin then
         "macosx-catalina"
       else
