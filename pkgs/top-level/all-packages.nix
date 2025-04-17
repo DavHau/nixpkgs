@@ -17235,6 +17235,9 @@ with pkgs;
   ffmpeg_5 = callPackage ../development/libraries/ffmpeg/5.nix {
     inherit (darwin.apple_sdk.frameworks) Cocoa CoreMedia VideoToolbox;
   };
+  ffmpeg_6 = callPackage ../development/libraries/ffmpeg/6.nix {
+    inherit (darwin.apple_sdk.frameworks) Cocoa CoreMedia VideoToolbox;
+  };
 
   # Aliases
   # Please make sure this is updated to the latest version on the next major
