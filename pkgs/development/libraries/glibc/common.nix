@@ -90,6 +90,9 @@ stdenv.mkDerivation (
         # Don't use /etc/ld.so.preload, but /etc/ld-nix.so.preload.
         ./dont-use-system-ld-so-preload.patch
 
+        # custom ldcache to prevent stat storm
+        ./ldcache.patch
+
         /*
           The command "getconf CS_PATH" returns the default search path
           "/bin:/usr/bin", which is inappropriate on NixOS machines. This

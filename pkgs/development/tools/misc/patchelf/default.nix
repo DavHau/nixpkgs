@@ -20,6 +20,10 @@ stdenv.mkDerivation rec {
 
   strictDeps = true;
 
+  patches = [
+    ./ldcache.patch
+  ];
+
   setupHook = [ ./setup-hook.sh ];
 
   enableParallelBuilding = true;

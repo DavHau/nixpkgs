@@ -83,8 +83,9 @@ let
           ../../build-support/setup-hooks/reproducible-builds.sh
           ../../build-support/setup-hooks/set-source-date-epoch-to-latest.sh
           ../../build-support/setup-hooks/strip.sh
-        ]
-        ++ lib.optionals hasCC [ cc ];
+        ] ++ lib.optionals (hostPlatform.isLinux && hostPlatform.isGnu) [
+          ../../build-support/setup-hooks/generate-ld-cache.sh
+        ] ++ lib.optionals hasCC [ cc ];
 
       defaultBuildInputs = extraBuildInputs;
 
