@@ -21,6 +21,11 @@ stdenv.mkDerivation rec {
   pname = "mosh";
   version = "1.4.0";
 
+  autoconfCacheIgnore = [
+    # prevents ac_cv_have_decl_forkpty: ${ac_cv_have_decl_forkpty=yes} != ${ac_cv_have_decl_forkpty=no}
+    "ac_cv_have_decl_forkpty"
+  ];
+
   src = fetchFromGitHub {
     owner = "mobile-shell";
     repo = "mosh";
