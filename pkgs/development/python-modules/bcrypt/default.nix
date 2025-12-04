@@ -5,7 +5,7 @@
   rustPlatform,
   rustc,
   setuptools,
-  setuptools-rust,
+  setuptoolsRustBuildHook,
   fetchFromGitHub,
   pytestCheckHook,
   # for passthru.tests
@@ -39,12 +39,9 @@ buildPythonPackage rec {
     hash = "sha256-hYMJlwxnXA0ZOJiyZ8rDp9govVcc1SGkDfqUVngnUPQ=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-rust
-  ];
-
   nativeBuildInputs = [
+    setuptools
+    setuptoolsRustBuildHook
     rustPlatform.cargoSetupHook
     cargo
     rustc
